@@ -9,6 +9,20 @@ use Gadget\Io\Exception\FileException;
 final class File
 {
     /**
+     * @param string $pattern
+     * @param int $flags
+     * @return string[]
+     */
+    public static function glob(
+        string $pattern,
+        int $flags = 0
+    ): array {
+        $glob = glob($pattern, $flags);
+        return is_array($glob) ? $glob : [];
+    }
+
+
+    /**
      * @param string $path
      * @return string
      */
