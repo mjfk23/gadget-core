@@ -76,14 +76,14 @@ abstract class AbstractObjectStore implements ObjectStoreInterface
     /** @inheritdoc */
     public function has(string $key): bool
     {
-        return $this->objectMap->has($key);
+        return $this->objectMap->has($this->key($key));
     }
 
 
     /** @inheritdoc */
     public function get(string $key): object|null
     {
-        return $this->objectMap->get($key);
+        return $this->objectMap->get($this->key($key));
     }
 
 
@@ -91,15 +91,17 @@ abstract class AbstractObjectStore implements ObjectStoreInterface
     public function save(object $element): bool
     {
         $key = $this->key($element);
-        $this->objectMap->set($this->key($element), $element);
-        return $this->objectMap->has($key);
+        $this->objectMap->set($key, $element);
+        return $this->has($key);
     }
 
 
     /** @inheritdoc */
     public function delete(string|object $keyOrElement): bool
     {
-        return $this->objectMap->remove($this->key($keyOrElement)) !== null;
+        $key = $this->key($keyOrElement);
+        $this->objectMap->remove($key);
+        return !$this->has($key);
     }
 
 
