@@ -9,14 +9,21 @@ use Gadget\Io\Exception\FileException;
 final class File
 {
     /**
-     * @param string $pattern
+     * @param string|string[] $pattern
      * @param int $flags
      * @return string[]
      */
     public static function glob(
-        string $pattern,
+        string|array $pattern,
         int $flags = 0
     ): array {
+        if (is_array($pattern)) {
+            return array_unique(array_merge(...array_map(
+                fn(string $p): array => self::glob($p, $flags),
+                $pattern
+            )));
+        }
+
         $glob = glob($pattern, $flags);
         return is_array($glob) ? $glob : [];
     }
