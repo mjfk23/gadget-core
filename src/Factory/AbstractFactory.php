@@ -10,21 +10,33 @@ namespace Gadget\Factory;
  */
 abstract class AbstractFactory implements FactoryInterface
 {
+    /** @var \ReflectionClass<TElement> $class*/
+    private \ReflectionClass $class;
+
+
     /**
-     * @param class-string<TElement> $className
+     * @param \ReflectionClass<TElement>|class-string<TElement> $class
      */
-    public function __construct(protected string $className)
+    public function __construct(\ReflectionClass|string $class)
     {
+        $this->class = $class instanceof \ReflectionClass
+            ? $class
+            : new \ReflectionClass($class);
     }
 
 
-    /** @inheritdoc */
-    public function getClass(): string
+    /**
+     * @return \ReflectionClass<TElement>
+     */
+    public function getClass(): \ReflectionClass
     {
-        return $this->className;
+        return $this->class;
     }
 
 
-    /** @inheritdoc */
+    /**
+     * @param mixed $values
+     * @return TElement
+     */
     abstract public function create(mixed $values): object;
 }

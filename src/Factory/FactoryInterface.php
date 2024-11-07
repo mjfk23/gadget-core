@@ -10,9 +10,9 @@ namespace Gadget\Factory;
 interface FactoryInterface
 {
     /**
-     * @return class-string<TElement>
+     * @return \ReflectionClass<TElement>
      */
-    public function getClass(): string;
+    public function getClass(): \ReflectionClass;
 
 
     /**
