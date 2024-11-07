@@ -46,6 +46,7 @@ final class StackTrace implements \IteratorAggregate
 
         list($file, $line, $trace, $prev) = $this->getThrowableParts($t);
 
+        $last = false;
         do {
             $current = "{$file}:{$line}";
             if (in_array($current, $this->seen, true)) {
@@ -66,12 +67,16 @@ final class StackTrace implements \IteratorAggregate
                 str_replace('\\', '.', ($traceClass ?? '')),
                 is_string($traceClass) && is_string($traceFunction) ? '.' : '',
                 str_replace('\\', '.', ($traceFunction ?? '(main)')),
-                $traceLine === null ? $traceFile : basename($traceFile) . ':' . $traceLine
+                $line === null ? $file : basename($file) . ':' . $line
             );
 
+            if ($last) {
+                break;
+            }
             $file = $traceFile;
             $line = $traceLine;
-        } while (count($trace) > 0);
+            $last = count($trace) === 0;
+        } while (true);
 
         if ($prev !== null) {
             yield from self::getStackTraceDetail($prev);
