@@ -69,4 +69,49 @@ final class File
             ? $bytes
             : throw new FileException(["Unable to read file: %s", $path]);
     }
+
+
+    /**
+     * @param string $filename
+     * @param string $mode
+     * @param bool $use_include_path
+     * @param resource|null $context
+     * @return resource
+     */
+    public static function open(
+        string $filename,
+        string $mode,
+        bool $use_include_path = false,
+        mixed $context = null
+    ): mixed {
+        $file = fopen($filename, $mode, $use_include_path, $context);
+        return is_resource($file)
+            ? $file
+            : throw new FileException(["Unable to open file: %s", $filename]);
+    }
+
+
+    /**
+     * @template T
+     * @param string $filename
+     * @param string $mode
+     * @param (callable(resource $file): T) $callback
+     * @param bool $use_include_path
+     * @param resource|null $context
+     * @return T
+     */
+    public function use(
+        string $filename,
+        string $mode,
+        callable $callback,
+        bool $use_include_path = false,
+        mixed $context = null
+    ): mixed {
+        $file = self::open($filename, $mode, $use_include_path, $context);
+        try {
+            return $callback($file);
+        } finally {
+            fclose($file);
+        }
+    }
 }
