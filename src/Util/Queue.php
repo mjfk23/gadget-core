@@ -5,47 +5,42 @@ declare(strict_types=1);
 namespace Gadget\Util;
 
 /**
- * @template TElement
- * @extends Collection<TElement>
+ * @template V
+ * @template-extends Collection<int,V>
  */
 class Queue extends Collection
 {
     /**
-     * @param TElement[] $elements
-     */
-    public function __construct(array $elements = [])
-    {
-        parent::__construct();
-        foreach ($elements as $element) {
-            $this->add($element);
-        }
-    }
-
-
-    /**
-     * @return TElement|null
+     * @return V|null
      */
     public function peek(): mixed
     {
-        return $this->elements[0] ?? null;
+        return !$this->empty()
+            ? $this->getElement(0)
+            : null;
     }
 
 
     /**
-     * @param TElement $element
-     * @return void
+     * @param V $value
+     * @return static
      */
-    public function add(mixed $element): void
+    public function enqueue(...$value): static
     {
-        array_push($this->elements, $element);
+        foreach ($value as $v) {
+            $this->setElement($this->count(), $v);
+        }
+        return $this;
     }
 
 
     /**
-     * @return TElement|null
+     * @return V|null
      */
-    public function remove(): mixed
+    public function dequeue(): mixed
     {
-        return array_shift($this->elements);
+        return !$this->empty()
+            ? $this->removeElement(0)
+            : null;
     }
 }
