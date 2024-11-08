@@ -9,6 +9,9 @@ use Psr\Cache\CacheItemInterface;
 /** @template T */
 abstract class TypedCachePool
 {
+    private int|null $expiresAfter = null;
+
+
     /**
      * @param CacheItemPool $cache
      */
@@ -34,6 +37,26 @@ abstract class TypedCachePool
     protected function setCache(CacheItemPool $cache): static
     {
         $this->cache = $cache;
+        return $this;
+    }
+
+
+    /**
+     * @return int
+     */
+    public function getExpiresAfter(): int|null
+    {
+        return $this->expiresAfter;
+    }
+
+
+    /**
+     * @param int|null $expiresAfter
+     * @return static
+     */
+    public function setExpiresAfter(int|null $expiresAfter): static
+    {
+        $this->expiresAfter = $expiresAfter;
         return $this;
     }
 
@@ -67,17 +90,26 @@ abstract class TypedCachePool
     /**
      * @param string $key
      * @param T|null $value
+     * @param int|null $expiresAfter
      * @return T|null
      */
     public function set(
         string $key,
-        mixed $value
+        mixed $value,
+        int|null $expiresAfter = null
     ): mixed {
+        $expiresAfter ??= $this->getExpiresAfter();
+
         if ($value !== null) {
-            $this->cache->save($this->cache->get($key)->set($value));
+            $item = $this->cache->get($key)->set($value);
+            if (is_int($expiresAfter)) {
+                $item = $item->expiresAfter($expiresAfter);
+            }
+            $this->cache->save($item);
         } else {
             $this->delete($key);
         }
+
         return $value;
     }
 
