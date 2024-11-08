@@ -43,10 +43,10 @@ final class CacheItemPool
 
 
     /**
-     * @param string[] $key
+     * @param string $key
      * @return string
      */
-    public function key(array $key): string
+    public function key(...$key): string
     {
         return hash('SHA256', implode("::", [...$this->namespace, ...$key]));
     }
@@ -58,7 +58,7 @@ final class CacheItemPool
      */
     public function get(...$key): CacheItemInterface
     {
-        return $this->cache->getItem($this->key($key));
+        return $this->cache->getItem($this->key(...$key));
     }
 
 
