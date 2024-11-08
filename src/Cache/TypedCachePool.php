@@ -77,13 +77,16 @@ abstract class TypedCachePool
 
     /**
      * @param string $key
+     * @param bool $skipCreate
      * @return T|null
      */
-    public function get(string $key): mixed
-    {
+    public function get(
+        string $key,
+        bool $skipCreate = false
+    ): mixed {
         $item = $this->cache->get($key);
         $value = ($item->isHit()) ? $this->toValue($item->get()) : null;
-        return $value ?? $this->set($key, $this->create($item));
+        return $value ?? (!$skipCreate ? $this->set($key, $this->create($item)) : null);
     }
 
 
