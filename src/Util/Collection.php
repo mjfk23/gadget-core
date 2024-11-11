@@ -47,7 +47,8 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
      */
     public function setElements(array $elements): static
     {
-        return $this->clear()->addElements($elements);
+        $this->elements = $elements;
+        return $this;
     }
 
 
@@ -58,7 +59,7 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
     public function addElements(array $elements): static
     {
         foreach ($elements as $k => $v) {
-            $this->setElement($k, $v);
+            $this->elements[$k] = $v;
         }
         return $this;
     }
@@ -70,7 +71,7 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
      */
     public function hasElement(string|int $key): bool
     {
-        return isset($this->elements[$key]);
+        return isset($this->elements[$key]) && ($this->elements[$key] ?? null) !== null;
     }
 
 
@@ -83,7 +84,7 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
         string|int $key,
         mixed $default = null
     ): mixed {
-        return $this->hasElement($key) ? $this->elements[$key] : $default;
+        return $this->elements[$key] ?? $default;
     }
 
 
@@ -97,7 +98,7 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
         mixed $value
     ): mixed {
         $this->elements[$key] = $value;
-        return $this->getElement($key) ?? throw new \RuntimeException();
+        return $value;
     }
 
 
@@ -107,7 +108,7 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
      */
     public function removeElement(string|int $key): mixed
     {
-        $element = $this->getElement($key);
+        $element = $this->elements[$key] ?? null;
         unset($this->elements[$key]);
         return $element;
     }
@@ -138,7 +139,7 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
      */
     public function getIterator(): \Traversable
     {
-        yield from $this->getElements();
+        yield from $this->elements;
     }
 
 
@@ -147,7 +148,7 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
      */
     public function keys(): array
     {
-        return array_keys($this->getElements());
+        return array_keys($this->elements);
     }
 
 
@@ -156,7 +157,7 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
      */
     public function values(): mixed
     {
-        return array_values($this->getElements());
+        return array_values($this->elements);
     }
 
 
@@ -165,7 +166,7 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
      */
     public function count(): int
     {
-        return count($this->getElements());
+        return count($this->elements);
     }
 
 
@@ -183,7 +184,7 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
      */
     public function clear(): static
     {
-        $this->setElements([]);
+        $this->elements = [];
         return $this;
     }
 
@@ -252,6 +253,6 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
      */
     public function jsonSerialize(): mixed
     {
-        return $this->getElements();
+        return $this->elements;
     }
 }
