@@ -4,8 +4,8 @@ services:
     autoconfigure: true
 
   Gadget\:
-    resource: '../../src/'
+    resource: '../../../src/'
     exclude:
-      - '../../src/DependencyInjection/'
-      - '../../src/Entity/'
-      - '../../src/Kernel.php'
+      - '../../../src/DependencyInjection/'
+      - '../../../src/Entity/'
+      - '../../../src/Kernel.php'
