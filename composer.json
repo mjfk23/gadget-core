@@ -21,8 +21,7 @@
   },
   "require": {
     "php": ">=8.1",
-    "ext-json": "*",
-    "psr/cache": "^3.0"
+    "ext-json": "*"
   },
   "require-dev": {
     "phpstan/phpstan": "^1.12",
