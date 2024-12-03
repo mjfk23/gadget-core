@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Gadget\Io;
 
-use Gadget\Io\Exception\CastException;
+use Gadget\Exception\CastException;
 
 final class Cast
 {
@@ -21,7 +21,7 @@ final class Cast
             is_array($value) => $value,
             is_object($value) => get_object_vars($value),
             is_string($value) => self::toArray(JSON::decode($value)),
-            default => throw new CastException([$value])
+            default => throw new CastException($value, gettype([]))
         };
     }
 
@@ -39,7 +39,7 @@ final class Cast
                 self::BOOL_VALUES,
                 true
             ),
-            default => throw new CastException([$value])
+            default => throw new CastException($value, gettype(false))
         };
     }
 
@@ -54,7 +54,7 @@ final class Cast
             is_float($value) => $value,
             is_scalar($value) => floatval($value),
             $value instanceof \Stringable => floatval($value->__toString()),
-            default => throw new CastException([$value])
+            default => throw new CastException($value, gettype(0.0))
         };
     }
 
@@ -69,7 +69,7 @@ final class Cast
             is_int($value) => $value,
             is_scalar($value) => intval($value),
             $value instanceof \Stringable => intval($value->__toString()),
-            default => throw new CastException([$value])
+            default => throw new CastException($value, gettype(0))
         };
     }
 
@@ -83,7 +83,7 @@ final class Cast
         return match (true) {
             is_string($value) => $value,
             is_scalar($value) || $value instanceof \Stringable => strval($value),
-            default => throw new CastException([$value])
+            default => throw new CastException($value, gettype(''))
         };
     }
 

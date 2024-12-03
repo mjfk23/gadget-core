@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Gadget\Time;
+namespace Gadget\Util;
 
 final class Timer implements \Stringable
 {

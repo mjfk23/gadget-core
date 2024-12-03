@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Gadget\Security\MFA;
+namespace Gadget\Util\MFA;
 
 use Gadget\Io\Base32;
 

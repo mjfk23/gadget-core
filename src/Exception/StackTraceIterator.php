@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Gadget\Lang;
+namespace Gadget\Exception;
 
 /** @implements \IteratorAggregate<string> */
-final class StackTrace implements \IteratorAggregate
+class StackTraceIterator implements \IteratorAggregate
 {
     /** @var string[]|null $seen */
     private array|null $seen = null;

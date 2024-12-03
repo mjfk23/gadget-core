@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Gadget\Io;
 
-use Gadget\Io\Exception\DOMException;
+use Gadget\Exception\DOMException;
 
 final class DOM
 {
@@ -26,7 +26,7 @@ final class DOM
         $document = new \DOMDocument();
         return (@$document->loadHTML($contents) === true)
             ? $document
-            : throw new DOMException("Unable to load HTML document");
+            : throw new DOMException("Unable to load HTML");
     }
 
 
@@ -42,7 +42,7 @@ final class DOM
         $node = $document->getElementById($id);
         return ($node instanceof \DOMNode)
             ? $node
-            : throw new DOMException(["Element '%s' not found", $id]);
+            : throw new DOMException(["Element not found: %s", [$id]]);
     }
 
 
@@ -118,7 +118,7 @@ final class DOM
         $child = self::findChildrenByName($node, $name)[0] ?? null;
         return $child !== null
             ? $child
-            : throw new DOMException(["Element '%s' not found", $name]);
+            : throw new DOMException(["Element not found: %s", [$name]]);
     }
 
 
