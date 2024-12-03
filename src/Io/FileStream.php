@@ -42,6 +42,30 @@ class FileStream
     }
 
 
+    /**
+     * @param self $stream
+     * @return iterable<int,array{begin:int,end:int,length:int}>
+     */
+    public static function foreachCsvRowPos(self $stream): iterable
+    {
+        try {
+            $stream->open()->rewind();
+            for ($line = 1; $stream->eof() === false; $line++) {
+                $rowBegin = $stream->tell();
+                $stream->readCsvRow();
+                $rowEnd = $stream->tell();
+                yield $line => [
+                    'begin' => $rowBegin,
+                    'end' => $rowEnd,
+                    'length' => $rowEnd - $rowBegin
+                ];
+            }
+        } finally {
+            $stream->close();
+        }
+    }
+
+
     private File|null $file = null;
 
 
@@ -59,7 +83,9 @@ class FileStream
         private mixed $context = null,
         private mixed $stream = false
     ) {
-        $this->file = is_string($file) ? new File($file) : $file;
+        if ($file !== null) {
+            $this->setFile($file);
+        }
     }
 
 
@@ -294,6 +320,7 @@ class FileStream
         string $enclosure = "\"",
         string $escape = "\\"
     ): array {
+        /** @var string[]|false $row */
         $row = fgetcsv(
             $this->getStream(),
             $length,
@@ -301,6 +328,7 @@ class FileStream
             $enclosure,
             $escape
         );
+
         return is_array($row)
             ? $row
             : throw new FileException(["Unable to read from file: %s", [$this->getFile()]]);
@@ -408,7 +436,7 @@ class FileStream
 
 
     /**
-     * @param int $operation
+     * @param int<0,7> $operation
      * @param int|null $wouldBlock
      * @return $this
      */

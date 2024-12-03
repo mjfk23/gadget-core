@@ -1,4 +1,5 @@
 parameters:
-        level: 9
+        tmpDir: vendor/tmp/phpstan
+        level: 10
         paths:
                 - src

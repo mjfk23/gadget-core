@@ -4,7 +4,23 @@ declare(strict_types=1);
 
 namespace Gadget\Exception;
 
-/** @implements \IteratorAggregate<string> */
+/**
+ * @phpstan-type ThrowableParts array{
+ *   file:string,
+ *   line:int,
+ *   trace:list<TraceDetails>,
+ *   previous:\Throwable|null
+ * }
+ *
+ * @phpstan-type TraceDetails array{
+ *   file:string,
+ *   line:int|null,
+ *   class:class-string|null,
+ *   function:string
+ * }
+ *
+ * @implements \IteratorAggregate<string>
+ */
 class StackTraceIterator implements \IteratorAggregate
 {
     /** @var string[]|null $seen */
@@ -44,7 +60,12 @@ class StackTraceIterator implements \IteratorAggregate
             $this->seen = [];
         }
 
-        list($file, $line, $trace, $prev) = $this->getThrowableParts($t);
+        list(
+            'file' => $file,
+            'line' => $line,
+            'trace' => $trace,
+            'previous' => $prev
+        ) = $this->getThrowableParts($t);
 
         $last = false;
         do {
@@ -56,17 +77,17 @@ class StackTraceIterator implements \IteratorAggregate
 
             $this->seen[] = $current;
             list(
-                $traceFile,
-                $traceLine,
-                $traceClass,
-                $traceFunction
-            ) = $this->getTraceParts(array_shift($trace) ?? []);
+                'file' => $traceFile,
+                'line' => $traceLine,
+                'class' => $traceClass,
+                'function' => $traceFunction
+            ) = $this->getTraceDetails(array_shift($trace));
 
             yield sprintf(
                 ' at %s%s%s(%s)',
                 str_replace('\\', '.', ($traceClass ?? '')),
-                is_string($traceClass) && is_string($traceFunction) ? '.' : '',
-                str_replace('\\', '.', ($traceFunction ?? '(main)')),
+                is_string($traceClass) ? '.' : '',
+                str_replace('\\', '.', $traceFunction),
                 $line === null ? $file : basename($file) . ':' . $line
             );
 
@@ -86,33 +107,38 @@ class StackTraceIterator implements \IteratorAggregate
 
     /**
      * @param \Throwable $t
-     * @return array{string,int,array<int,array<string,string|null>>,\Throwable|null}
+     * @return ThrowableParts
      */
     private function getThrowableParts(\Throwable $t): array
     {
-        $file = $t->getFile();
-        $line = $t->getLine();
-        /** @var array<int,array<string,string|null>> $trace */
-        $trace = $t->getTrace();
-        $prev = $t->getPrevious();
-
-        return [$file, $line, $trace, $prev];
+        return [
+            'file' => $t->getFile(),
+            'line' => $t->getLine(),
+            'trace' => array_map(
+                fn(array $d) => [
+                    'file' => $d['file'] ?? 'Unknown Source',
+                    'line' => ($d['line'] ?? 0) > 0 ? $d['line'] : null,
+                    'class' => $d['class'] ?? null,
+                    'function' => $d['function']
+                ],
+                $t->getTrace()
+            ),
+            'previous' => $t->getPrevious()
+        ];
     }
 
 
     /**
-     * @param array<string,string|null> $trace
-     * @return array{string,int|null,string|null,string|null}
+     * @param TraceDetails|null $details
+     * @return TraceDetails
      */
-    private function getTraceParts(array $trace): array
+    private function getTraceDetails(array|null $details): array
     {
-        $traceFile =  $trace['file'] ?? 'Unknown Source';
-        $traceLine = intval(isset($trace['file']) ? ($trace['line'] ?? 0) : 0);
-        if ($traceLine < 1) {
-            $traceLine = null;
-        }
-        $traceClass = $trace['class'] ?? null;
-        $traceFunction = $trace['function'] ?? null;
-        return [$traceFile, $traceLine, $traceClass, $traceFunction];
+        return $details ?? [
+            'file' => 'Unknown Source',
+            'line' => null,
+            'class' => null,
+            'function' => '(main)'
+        ];
     }
 }
