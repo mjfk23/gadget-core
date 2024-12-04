@@ -4,9 +4,54 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "37f7b59fb87b79f9dcf5a5237fc14a3b",
+    "content-hash": "89cf0c3d2eadf8d8b9aa9d22141d1ef2",
     "packages": [],
     "packages-dev": [
+        {
+            "name": "mjfk23/gadget-code-style",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mjfk23/gadget-code-style.git",
+                "reference": "410c605a669c7a882600870a155cb064fa5609f1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mjfk23/gadget-code-style/zipball/410c605a669c7a882600870a155cb064fa5609f1",
+                "reference": "410c605a669c7a882600870a155cb064fa5609f1",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phpstan/extension-installer": "^1.4",
+                "phpstan/phpstan": "^2.0",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "squizlabs/php_codesniffer": "^3.10"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Gadget\\CodeStyle\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Melody Kimball",
+                    "role": "lead"
+                }
+            ],
+            "homepage": "https://github.com/mjfk23/gadget-code-style",
+            "support": {
+                "issues": "https://github.com/mjfk23/gadget-code-style/issues",
+                "source": "https://github.com/mjfk23/gadget-code-style",
+                "wiki": "https://github.com/mjfk23/gadget-code-style/wiki"
+            },
+            "time": "2024-12-03T18:33:40+00:00"
+        },
         {
             "name": "phpstan/extension-installer",
             "version": "1.4.3",
