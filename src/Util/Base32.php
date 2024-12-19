@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Gadget\Io;
+namespace Gadget\Util;
 
 final class Base32
 {
