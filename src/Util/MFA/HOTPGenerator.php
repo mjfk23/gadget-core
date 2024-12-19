@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Gadget\Util\MFA;
 
-use Gadget\Io\Base32;
+use Gadget\Util\Base32;
 
-class HOTP
+class HOTPGenerator
 {
     private string $key = '';
     private string $algo = 'sha1';
