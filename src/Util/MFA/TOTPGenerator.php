@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Gadget\Util\MFA;
 
-class TOTP extends HOTP
+class TOTPGenerator extends HOTPGenerator
 {
     private int $timePeriod = 30;
     private int $startTime = 0;
