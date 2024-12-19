@@ -4,20 +4,28 @@ declare(strict_types=1);
 
 namespace Gadget\Exception;
 
-/** @implements \IteratorAggregate<string> */
+/**
+ * @implements \IteratorAggregate<string>
+ */
 class StackTraceIterator implements \IteratorAggregate
 {
-    /** @var array<string,string> $seen */
+    /**
+     * @var array<string,string> $seen
+     */
     private array $seen = [];
 
 
-    /** @param \Throwable $ex */
+    /**
+     * @param \Throwable $ex
+     */
     public function __construct(private \Throwable $ex)
     {
     }
 
 
-    /** @inheritdoc */
+    /**
+     * @return \Traversable<string>
+     */
     public function getIterator(): \Traversable
     {
         yield from $this->getStackTraceDetail($this->ex);

@@ -44,7 +44,10 @@ class TOTPGenerator extends HOTPGenerator
     }
 
 
-    /** @inheritdoc */
+    /**
+     * @param int<0,max> $counter
+     * @return static
+     */
     public function setCounter(int $counter): static
     {
         $counter = intval(floor(($this->currentTime - $this->startTime) / $this->timePeriod));

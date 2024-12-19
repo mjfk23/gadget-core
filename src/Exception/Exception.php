@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace Gadget\Exception;
 
-/**
- * @phpstan-type sprintf_args array{
- *   0: string|\Stringable,
- *   ...<int,string|\Stringable|int|float|bool|null>
- * }
- */
 class Exception extends \Exception
 {
     /**
-     * @param string|\Stringable|sprintf_args $message
+     * @param string|\Stringable|array{
+     *   0: string|\Stringable,
+     *   ...<int,string|\Stringable|int|float|bool|null>
+     * } $message
      * @param int $code
      * @param \Throwable|null $previous
      */

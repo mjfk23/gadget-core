@@ -11,7 +11,7 @@ final class Timer implements \Stringable
 
 
     /**
-     * @return self
+     * @return $this
      */
     public function start(): self
     {
@@ -22,7 +22,7 @@ final class Timer implements \Stringable
 
 
     /**
-     * @return self
+     * @return $this
      */
     public function stop(): self
     {
@@ -32,7 +32,7 @@ final class Timer implements \Stringable
 
 
     /**
-     * @return self
+     * @return $this
      */
     public function reset(): self
     {
@@ -63,7 +63,9 @@ final class Timer implements \Stringable
     }
 
 
-    /** @inheritdoc */
+    /**
+     * @return string
+     */
     public function __toString(): string
     {
         return $this->getElapsed();
