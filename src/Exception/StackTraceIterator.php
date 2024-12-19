@@ -4,33 +4,15 @@ declare(strict_types=1);
 
 namespace Gadget\Exception;
 
-/**
- * @phpstan-type ThrowableParts array{
- *   file:string,
- *   line:int,
- *   trace:list<TraceDetails>,
- *   previous:\Throwable|null
- * }
- *
- * @phpstan-type TraceDetails array{
- *   file:string,
- *   line:int|null,
- *   class:class-string|null,
- *   function:string
- * }
- *
- * @implements \IteratorAggregate<string>
- */
+/** @implements \IteratorAggregate<string> */
 class StackTraceIterator implements \IteratorAggregate
 {
-    /** @var string[]|null $seen */
-    private array|null $seen = null;
+    /** @var array<string,string> $seen */
+    private array $seen = [];
 
 
-    /**
-     * @param \Throwable $root
-     */
-    public function __construct(private \Throwable $root)
+    /** @param \Throwable $ex */
+    public function __construct(private \Throwable $ex)
     {
     }
 
@@ -38,107 +20,95 @@ class StackTraceIterator implements \IteratorAggregate
     /** @inheritdoc */
     public function getIterator(): \Traversable
     {
-        $this->seen = null;
-        yield from $this->getStackTraceDetail($this->root);
+        yield from $this->getStackTraceDetail($this->ex);
     }
 
 
     /**
-     * @param \Throwable $t
+     * @param \Throwable|null $ex
      * @return iterable<string>
      */
-    private function getStackTraceDetail(\Throwable $t): iterable
+    private function getStackTraceDetail(\Throwable|null $ex): iterable
     {
-        yield sprintf(
-            '%s%s: %s',
-            is_array($this->seen) ? 'Caused by: ' :  '',
-            get_class($t),
-            $t->getMessage()
+        if ($ex === null) {
+            return;
+        }
+
+        yield $this->writeException($ex);
+
+        $trace = $this->getTrace($ex);
+        $remaining = count($trace);
+        foreach ($trace as list($current, $file, $line, $class, $function)) {
+            if (isset($this->seen[$current])) {
+                yield " ... {$remaining} more";
+                break;
+            }
+
+            $this->seen[$current] = $current;
+            yield $this->writeTrace($file, $line, $class, $function);
+            $remaining--;
+        }
+
+        yield from $this->getStackTraceDetail($ex->getPrevious());
+    }
+
+
+    /**
+     * @param \Throwable $ex
+     * @return string
+     */
+    private function writeException(\Throwable $ex): string
+    {
+        $causedBy = count($this->seen) > 0 ? 'Caused by: ' :  '';
+        $exClass = get_class($ex);
+        $exMessage = $ex->getMessage();
+        return "{$causedBy}{$exClass}: {$exMessage}";
+    }
+
+
+    /**
+     * @param string $file
+     * @param int $line
+     * @param string|null $class
+     * @param string $function
+     * @return string
+     */
+    private function writeTrace(
+        string $file,
+        int $line,
+        string|null $class,
+        string $function
+    ): string {
+        $file = $line > 0 ? basename($file) : $file;
+        $line = $line > 0 ? ":{$line}" : 0;
+        $class = is_string($class) ? str_replace('\\', '.', $class) . '.' : '';
+        $function = str_replace('\\', '.', $function);
+        return " at {$class}{$function}({$file}{$line})";
+    }
+
+
+    /**
+     * @param \Throwable $ex
+     * @return array{string,string,int,string|null,string}[]
+     */
+    private function getTrace(\Throwable $ex): array
+    {
+        /** @var array{string,int}[] $fileLine */
+        $fileLine = [[$ex->getFile(), $ex->getLine()]];
+        /** @var array{string|null,string}[] $classFunction */
+        $classFunction = [];
+
+        $trace = $ex->getTrace();
+        foreach ($trace as $t) {
+            $fileLine[] = [$t['file'] ?? '', $t['line'] ?? 0];
+            $classFunction[] = [$t['class'] ?? null, $t['function']];
+        }
+        $classFunction[] = [null, '{main}'];
+
+        return array_map(
+            fn(array $fl, array $cf) => [$fl[0] . ':' . $fl[1], $fl[0], $fl[1], $cf[0], $cf[1]],
+            $fileLine,
+            $classFunction
         );
-
-        if ($this->seen === null) {
-            $this->seen = [];
-        }
-
-        list(
-            'file' => $file,
-            'line' => $line,
-            'trace' => $trace,
-            'previous' => $prev
-        ) = $this->getThrowableParts($t);
-
-        $last = false;
-        do {
-            $current = "{$file}:{$line}";
-            if (in_array($current, $this->seen, true)) {
-                yield sprintf(' ... %d more', count($trace) + 1);
-                break;
-            }
-
-            $this->seen[] = $current;
-            list(
-                'file' => $traceFile,
-                'line' => $traceLine,
-                'class' => $traceClass,
-                'function' => $traceFunction
-            ) = $this->getTraceDetails(array_shift($trace));
-
-            yield sprintf(
-                ' at %s%s%s(%s)',
-                str_replace('\\', '.', ($traceClass ?? '')),
-                is_string($traceClass) ? '.' : '',
-                str_replace('\\', '.', $traceFunction),
-                $line === null ? $file : basename($file) . ':' . $line
-            );
-
-            if ($last) {
-                break;
-            }
-            $file = $traceFile;
-            $line = $traceLine;
-            $last = count($trace) === 0;
-        } while (true);
-
-        if ($prev !== null) {
-            yield from self::getStackTraceDetail($prev);
-        }
-    }
-
-
-    /**
-     * @param \Throwable $t
-     * @return ThrowableParts
-     */
-    private function getThrowableParts(\Throwable $t): array
-    {
-        return [
-            'file' => $t->getFile(),
-            'line' => $t->getLine(),
-            'trace' => array_map(
-                fn(array $d) => [
-                    'file' => $d['file'] ?? 'Unknown Source',
-                    'line' => ($d['line'] ?? 0) > 0 ? $d['line'] : null,
-                    'class' => $d['class'] ?? null,
-                    'function' => $d['function']
-                ],
-                $t->getTrace()
-            ),
-            'previous' => $t->getPrevious()
-        ];
-    }
-
-
-    /**
-     * @param TraceDetails|null $details
-     * @return TraceDetails
-     */
-    private function getTraceDetails(array|null $details): array
-    {
-        return $details ?? [
-            'file' => 'Unknown Source',
-            'line' => null,
-            'class' => null,
-            'function' => '(main)'
-        ];
     }
 }
