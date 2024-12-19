@@ -4,39 +4,59 @@ declare(strict_types=1);
 
 namespace Gadget\Exception;
 
+/**
+ * @phpstan-type sprintf_args array{
+ *   0: string|\Stringable,
+ *   ...<int,string|\Stringable|int|float|bool|null>
+ * }
+ */
 class Exception extends \Exception
 {
     /**
-     * @param string|\Stringable|array{string,(string|\Stringable|int|float)[]} $message
+     * @param string|\Stringable|sprintf_args $message
+     * @param int $code
      * @param \Throwable|null $previous
      */
     public function __construct(
         string|\Stringable|array $message = "",
+        int $code = 0,
         \Throwable|null $previous = null
     ) {
         parent::__construct(
-            is_array($message)
-                ? sprintf(
-                    $message[0],
-                    ...array_map(
-                        fn($v) => $v instanceof \Stringable ? strval($v) : $v,
-                        $message[1]
-                    )
-                )
-                : strval($message),
-            0,
+            $this->formatMessage(...(is_array($message) ? $message : [$message])),
+            $code,
             $previous
         );
     }
 
 
     /**
-     * @param int $code
-     * @return $this
+     * @param string|\Stringable $message
+     * @param string|\Stringable|int|float|bool|null ...$values
+     * @return string
      */
-    public function setCode(int $code): static
+    protected function formatMessage(
+        string|\Stringable $message,
+        string|\Stringable|int|float|bool|null ...$values
+    ): string {
+        return sprintf(
+            $message instanceof \Stringable ? $message->__toString() : $message,
+            ...array_map($this->formatMessageValue(...), $values)
+        );
+    }
+
+
+    /**
+     * @param string|\Stringable|int|float|bool|null $v
+     * @return string
+     */
+    protected function formatMessageValue(string|\Stringable|int|float|bool|null $v): string|int|float
     {
-        $this->code = $code;
-        return $this;
+        return match (true) {
+            $v instanceof \Stringable => $v->__toString(),
+            $v === null => 'null',
+            is_bool($v) => $v ? 'true' : 'false',
+            default => $v
+        };
     }
 }
