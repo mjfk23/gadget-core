@@ -42,7 +42,6 @@ final class JSON
         int $flags = 0,
         int $depth = 512
     ): string {
-        //
         return json_encode(
             $value,
             $flags | JSON_THROW_ON_ERROR,
